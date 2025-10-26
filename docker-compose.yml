@@ -1,0 +1,52 @@
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: autopost-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - autopost-network
+
+  backend:
+    build: ./backend
+    container_name: autopost-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - autopost-network
+
+  frontend:
+    build: ./frontend
+    container_name: autopost-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
+      - NEXT_PUBLIC_FACEBOOK_PAGE_ID=${FACEBOOK_PAGE_ID}
+      - NEXT_PUBLIC_FACEBOOK_PAGE_NAME=${FACEBOOK_PAGE_NAME}
+      - NEXT_PUBLIC_FACEBOOK_APP_NAME=${FACEBOOK_APP_NAME}
+    networks:
+      - autopost-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  autopost-network:
+    driver: bridge
