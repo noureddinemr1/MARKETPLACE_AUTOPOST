@@ -25,10 +25,16 @@ import { Post, DashboardStats, Image, Category, PostStatus } from '../../../type
 const Dashboard: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
-    totalPosts: 0,
-    scheduledPosts: 0,
-    publishedPosts: 0,
-    successRate: 0
+    total_posts: 0,
+    published_posts: 0,
+    scheduled_posts: 0,
+    draft_posts: 0,
+    archived_posts: 0,
+    success_rate: 0,
+    total_images: 0,
+    recent_posts_7_days: 0,
+    facebook_posted_count: 0,
+    average_price: 0
   });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,10 +92,16 @@ const Dashboard: React.FC = () => {
 
       setPosts(mockPosts);
       setStats({
-        totalPosts: mockPosts.length,
-        scheduledPosts: mockPosts.filter(p => p.status === 'scheduled').length,
-        publishedPosts: mockPosts.filter(p => p.status === 'published').length,
-        successRate: 92.5
+        total_posts: mockPosts.length,
+        published_posts: mockPosts.filter(p => p.status === 'published').length,
+        scheduled_posts: mockPosts.filter(p => p.status === 'scheduled').length,
+        draft_posts: mockPosts.filter(p => p.status === 'draft').length,
+        archived_posts: mockPosts.filter(p => p.status === 'archived').length,
+        success_rate: 92.5,
+        total_images: mockPosts.reduce((acc, p) => acc + p.images.length, 0),
+        recent_posts_7_days: mockPosts.length,
+        facebook_posted_count: mockPosts.filter(p => p.facebook_post_id).length,
+        average_price: mockPosts.reduce((acc, p) => acc + p.price, 0) / mockPosts.length
       });
       setLoading(false);
     }, 1000);
@@ -145,9 +157,9 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="w-12 h-12 mx-auto border-b-2 border-blue-600 rounded-full animate-spin"></div>
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -157,11 +169,11 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+      <header className="bg-white border-b shadow-sm">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
             <div className="flex items-center">
-              <Facebook className="w-8 h-8 text-blue-600 mr-3" />
+              <Facebook className="w-8 h-8 mr-3 text-blue-600" />
               <h1 className="text-2xl font-bold text-gray-900">Auto-Posting Bot</h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -181,9 +193,9 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-4">
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -191,7 +203,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Posts</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalPosts}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total_posts}</p>
               </div>
             </div>
           </div>
@@ -203,7 +215,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Scheduled</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.scheduledPosts}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.scheduled_posts}</p>
               </div>
             </div>
           </div>
@@ -215,7 +227,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Published</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.publishedPosts}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.published_posts}</p>
               </div>
             </div>
           </div>
@@ -227,22 +239,22 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.successRate}%</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.success_rate}%</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="card mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mb-6 card">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
                 <input
                   type="text"
                   placeholder="Search posts..."
-                  className="input pl-10"
+                  className="pl-10 input"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -289,31 +301,31 @@ const Dashboard: React.FC = () => {
                   <tr key={post.id} className="hover:bg-gray-50">
                     <td className="table-cell">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
+                        <div className="flex-shrink-0 w-10 h-10">
                           {post.images.length > 0 ? (
                             <img
-                              className="h-10 w-10 rounded-lg object-cover"
+                              className="object-cover w-10 h-10 rounded-lg"
                               src={post.images[0].url}
                               alt={post.title}
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                            <div className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-lg">
                               <Eye className="w-4 h-4 text-gray-400" />
                             </div>
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="font-medium text-gray-900 truncate max-w-xs">
+                          <div className="max-w-xs font-medium text-gray-900 truncate">
                             {post.title}
                           </div>
-                          <div className="text-gray-500 text-sm truncate max-w-xs">
+                          <div className="max-w-xs text-sm text-gray-500 truncate">
                             {post.location}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="table-cell">
-                      <span className="capitalize text-gray-900">{post.category}</span>
+                      <span className="text-gray-900 capitalize">{post.category}</span>
                     </td>
                     <td className="table-cell">
                       <span className="font-medium text-gray-900">${post.price}</span>
@@ -352,12 +364,12 @@ const Dashboard: React.FC = () => {
           </div>
 
           {filteredPosts.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
+            <div className="py-12 text-center">
+              <div className="mb-4 text-gray-400">
                 <Plus className="w-12 h-12 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
-              <p className="text-gray-500 mb-4">
+              <h3 className="mb-2 text-lg font-medium text-gray-900">No posts found</h3>
+              <p className="mb-4 text-gray-500">
                 {searchTerm || filterStatus !== 'all' 
                   ? 'Try adjusting your search or filter criteria.'
                   : 'Get started by creating your first post.'}
@@ -376,10 +388,10 @@ const Dashboard: React.FC = () => {
 
       {/* Modals would be implemented here */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Create New Post</h3>
-            <p className="text-gray-600 mb-4">Post creation form would be implemented here.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-6 bg-white rounded-lg">
+            <h3 className="mb-4 text-lg font-semibold">Create New Post</h3>
+            <p className="mb-4 text-gray-600">Post creation form would be implemented here.</p>
             <div className="flex justify-end space-x-2">
               <button 
                 className="btn-secondary"
@@ -394,10 +406,10 @@ const Dashboard: React.FC = () => {
       )}
 
       {selectedPost && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-semibold mb-4">{selectedPost.title}</h3>
-            <p className="text-gray-600 mb-4">{selectedPost.description}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="w-full max-w-2xl p-6 bg-white rounded-lg">
+            <h3 className="mb-4 text-lg font-semibold">{selectedPost.title}</h3>
+            <p className="mb-4 text-gray-600">{selectedPost.description}</p>
             <div className="flex justify-end">
               <button 
                 className="btn-secondary"
