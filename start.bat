@@ -36,11 +36,21 @@ echo Stopping any running containers...
 docker-compose down
 echo.
 
-echo Building and starting services...
+REM Remove old images to force complete rebuild
+echo Removing old images to force fresh build...
+docker rmi autopost-frontend autopost-backend 2>nul
 echo.
 
-REM Build and start all services
-docker-compose up -d --build
+REM Clean Docker build cache
+echo Cleaning Docker build cache...
+docker builder prune -f
+echo.
+
+echo Building and starting services with fresh build...
+echo.
+
+REM Build and start all services with force recreate
+docker-compose up -d --build --force-recreate
 
 if errorlevel 1 (
     echo.

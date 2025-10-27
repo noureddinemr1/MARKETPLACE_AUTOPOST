@@ -33,11 +33,21 @@ echo "🛑 Stopping any running containers..."
 docker-compose down
 
 echo ""
-echo "🔨 Building and starting services..."
+# Remove old images to force complete rebuild
+echo "🗑️  Removing old images to force fresh build..."
+docker rmi autopost-frontend autopost-backend 2>/dev/null || true
+
+echo ""
+# Clean Docker build cache
+echo "🧹 Cleaning Docker build cache..."
+docker builder prune -f
+
+echo ""
+echo "🔨 Building and starting services with fresh build..."
 echo ""
 
-# Build and start all services
-docker-compose up -d --build
+# Build and start all services with force recreate
+docker-compose up -d --build --force-recreate
 
 # Check if services started successfully
 if [ $? -eq 0 ]; then
